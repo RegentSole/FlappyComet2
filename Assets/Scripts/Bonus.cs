@@ -25,18 +25,12 @@ public class Bonus : MonoBehaviour
 
     private void Update()
     {
-        // Движение влево по X — на игрока
         transform.position += Vector3.left * speed * Time.deltaTime;
-
-        // Вращение для красоты
         transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime);
 
-        // Удаление за границами
         if (transform.position.x < xKillBoundary ||
             Mathf.Abs(transform.position.y) > camHeight + 1.5f)
         {
-            if (showDebug)
-                Debug.Log($"[Bonus] Удалён на pos = {transform.position}");
             Destroy(gameObject);
         }
     }

@@ -19,6 +19,5 @@ public class Obstacle : MonoBehaviour
     {
         if (passed) return;
         passed = true;
-        GameManager.Instance.AddScore(1);
     }
 }
