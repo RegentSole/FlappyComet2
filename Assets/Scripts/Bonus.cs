@@ -2,37 +2,37 @@ using UnityEngine;
 
 public class Bonus : MonoBehaviour
 {
-    [Header("Movement")]
     public float speed = 3f;
     public float xKillBoundary = -12f;
 
-    [Header("Visual")]
     [SerializeField] private float rotationSpeed = 120f;
     [SerializeField] private GameObject collectEffectPrefab;
 
-    [Header("Debug")]
-    [SerializeField] private bool showDebug = false;
-
     private float camHeight;
+    private bool isAttracted = false;   // для магнита
 
     private void Start()
     {
         camHeight = Camera.main != null ? Camera.main.orthographicSize : 5f;
-
-        if (showDebug)
-            Debug.Log($"[Bonus] Start. speed = {speed}, pos = {transform.position}");
     }
 
     private void Update()
     {
-        transform.position += Vector3.left * speed * Time.deltaTime;
+        if (!isAttracted)
+            transform.position += Vector3.left * speed * Time.deltaTime;
+
         transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime);
 
         if (transform.position.x < xKillBoundary ||
             Mathf.Abs(transform.position.y) > camHeight + 1.5f)
-        {
             Destroy(gameObject);
-        }
+    }
+
+    public void AttractTo(Vector3 target, float pullSpeed)
+    {
+        isAttracted = true;
+        transform.position = Vector3.MoveTowards(
+            transform.position, target, pullSpeed * Time.deltaTime);
     }
 
     public void Collect()

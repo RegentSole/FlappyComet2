@@ -1,30 +1,29 @@
 using UnityEngine;
-using TMPro;
 using VContainer;
 using VContainer.Unity;
 
 public class GameLifetimeScope : LifetimeScope
 {
     [Header("Scene Components")]
-    [SerializeField] private ObstacleSpawner obstacleSpawner;
     [SerializeField] private PlayerController playerController;
-
-    [Header("UI")]
-    [SerializeField] private TMP_Text scoreText;
-    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private ObstacleSpawner obstacleSpawner;
+    [SerializeField] private RestartButton restartButton;
+    [SerializeField] private ScoreUI scoreUI;
+    [SerializeField] private GameOverUI gameOverUI;
 
     protected override void Configure(IContainerBuilder builder)
     {
-        // Регистрируем UI-зависимости как готовые экземпляры
-        builder.RegisterInstance(scoreText);
-        builder.RegisterInstance(gameOverPanel);
-
-        // GameManager — чистый C# класс, Singleton + EntryPoint (получает Tick)
+        // ✅ GameManager — как Singleton-сервис
         builder.Register<GameManager>(Lifetime.Singleton);
-        builder.RegisterEntryPoint<GameManager>();
 
-        // Компоненты сцены — регистрируем как MonoBehaviour
-        builder.RegisterComponent(obstacleSpawner);
+        // ✅ GameBootstrap — entry point, зависит от GameManager
+        builder.RegisterEntryPoint<GameBootstrap>();
+
+        // ✅ Компоненты сцены — VContainer внедрит в них [Inject]
         builder.RegisterComponent(playerController);
+        builder.RegisterComponent(obstacleSpawner);
+        builder.RegisterComponent(restartButton);
+        builder.RegisterComponent(scoreUI);
+        builder.RegisterComponent(gameOverUI);
     }
 }

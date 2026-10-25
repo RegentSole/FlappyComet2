@@ -1,68 +1,53 @@
+using System;
 using UnityEngine;
-using TMPro;
-using VContainer;
-using VContainer.Unity;
 
-public class GameManager : ITickable, IStartable
+public class GameManager
 {
-    private readonly TMP_Text scoreText;
-    private readonly GameObject gameOverPanel;
+    public int Score { get; private set; }
+    public bool IsGameOver { get; private set; }
+    public bool IsRunning { get; private set; }
 
-    private int score = 0;
-    private bool isGameOver = false;
-
-    [Inject]
-    public GameManager(TMP_Text scoreText, GameObject gameOverPanel)
-    {
-        this.scoreText = scoreText;
-        this.gameOverPanel = gameOverPanel;
-    }
-
-    // Аналог Start()
-    public void Start()
-    {
-        StartGame();
-    }
-
-    // Аналог Update()
-    public void Tick()
-    {
-        if (scoreText != null && scoreText.text != score.ToString())
-            scoreText.text = score.ToString();
-    }
+    public event Action<int> ScoreChanged;
+    public event Action GameStarted;
+    public event Action GameEnded;
 
     public void StartGame()
     {
-        score = 0;
-        isGameOver = false;
-        if (scoreText != null) scoreText.text = "0";
-        if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        Score = 0;
+        IsGameOver = false;
+        IsRunning = true;
         Time.timeScale = 1f;
+
+        Debug.Log("[GameManager] StartGame");
+        ScoreChanged?.Invoke(Score);
+        GameStarted?.Invoke();
     }
 
     public void AddScore(int amount)
     {
-        if (isGameOver) return;
-        score += amount;
+        if (!IsRunning || IsGameOver) return;
+
+        Score += amount;
+        Debug.Log($"[GameManager] Score = {Score}");
+        ScoreChanged?.Invoke(Score);
     }
 
     public void GameOver()
     {
-        if (isGameOver) return;
-        isGameOver = true;
+        if (IsGameOver) return;
+
+        IsGameOver = true;
+        IsRunning = false;
         Time.timeScale = 0f;
-        if (gameOverPanel != null) gameOverPanel.SetActive(true);
+
+        Debug.Log("[GameManager] GameOver");
+        GameEnded?.Invoke();
     }
 
     public void RestartGame()
     {
+        if (!IsGameOver) return;
+        Debug.Log("[GameManager] RestartGame");
         StartGame();
-        if (ObstacleSpawner.Instance != null)
-            ObstacleSpawner.Instance.ResetSpawner();
-
-        // Возвращаем игрока в исходное состояние через событие
-        PlayerController.ResetRequested?.Invoke();
     }
-
-    public bool IsGameOver => isGameOver;
 }
